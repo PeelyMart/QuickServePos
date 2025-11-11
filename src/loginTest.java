@@ -1,5 +1,5 @@
 import Controller.UserService;
-import DAO.Database;
+import DAO.DB;
 import Model.Staff;
 
 import java.sql.Connection;
@@ -11,7 +11,7 @@ public class loginTest {
         Scanner scanner = new Scanner(System.in);
         boolean programRunning = true;
 
-        try (Connection conn = Database.getConnection()) {
+        try (Connection conn = DB.getConnection()) {
             while (programRunning) {
                 // Get the current user from UserService
                 Staff currentUser = UserService.getCurrentUser();

@@ -1,4 +1,4 @@
-import DAO.DB;
+package DAO;
 
 import java.math.BigDecimal;
 import java.sql.*;
