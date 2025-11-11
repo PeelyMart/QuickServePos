@@ -1,6 +1,5 @@
 package DAO;
 
-import java.math.BigDecimal;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.Date;
@@ -8,15 +7,27 @@ import java.util.Date;
 public class stafftrackerDAO {
 
     public boolean addStaffTracker(StaffTracker tracker) {
-        String sql = "INSERT INTO staff_tracker (staff_id, date, time_in, time_out, hours_worked) VALUES (?, ?, ?, ?, ?)";
+        String sql = "INSERT INTO staff_tracker (staff_id, date, time_in, time_out, session_minutes) VALUES (?, ?, ?, ?, ?)";
         try (Connection conn = DB.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
 
             stmt.setInt(1, tracker.getStaffId());
             stmt.setDate(2, new java.sql.Date(tracker.getDate().getTime()));
-            stmt.setTime(3, new java.sql.Time(tracker.getTimeIn().getTime()));
-            stmt.setTime(4, new java.sql.Time(tracker.getTimeOut().getTime()));
-            stmt.setBigDecimal(5, tracker.getHoursWorked());
+
+            // time_in and time_out may be null
+            if (tracker.getTimeIn() != null) {
+                stmt.setTimestamp(3, new Timestamp(tracker.getTimeIn().getTime()));
+            } else {
+                stmt.setNull(3, Types.TIMESTAMP);
+            }
+
+            if (tracker.getTimeOut() != null) {
+                stmt.setTimestamp(4, new Timestamp(tracker.getTimeOut().getTime()));
+            } else {
+                stmt.setNull(4, Types.TIMESTAMP);
+            }
+
+            stmt.setInt(5, tracker.getSessionMinutes());
 
             return stmt.executeUpdate() > 0;
         } catch (SQLException e) {
@@ -38,9 +49,9 @@ public class stafftrackerDAO {
             if (rs.next()) {
                 Date timeIn = new Date(rs.getTime("time_in").getTime());
                 Date timeOut = new Date(rs.getTime("time_out").getTime());
-                BigDecimal hoursWorked = rs.getBigDecimal("hours_worked");
+                int sessionMinutes = rs.getInt("session_minutes");
 
-                return new StaffTracker(staffId, date, timeIn, timeOut, hoursWorked);
+                return new StaffTracker(staffId, date, timeIn, timeOut, sessionMinutes);
             }
         } catch (SQLException e) {
             e.printStackTrace();
@@ -49,13 +60,23 @@ public class stafftrackerDAO {
     }
 
     public boolean updateStaffTracker(StaffTracker tracker) {
-        String sql = "UPDATE staff_tracker SET time_in = ?, time_out = ?, hours_worked = ? WHERE staff_id = ? AND date = ?";
+        String sql = "UPDATE staff_tracker SET time_in = ?, time_out = ?, session_minutes = ? WHERE staff_id = ? AND date = ?";
         try (Connection conn = DB.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
 
-            stmt.setTime(1, new java.sql.Time(tracker.getTimeIn().getTime()));
-            stmt.setTime(2, new java.sql.Time(tracker.getTimeOut().getTime()));
-            stmt.setBigDecimal(3, tracker.getHoursWorked());
+            if (tracker.getTimeIn() != null) {
+                stmt.setTimestamp(1, new Timestamp(tracker.getTimeIn().getTime()));
+            } else {
+                stmt.setNull(1, Types.TIMESTAMP);
+            }
+
+            if (tracker.getTimeOut() != null) {
+                stmt.setTimestamp(2, new Timestamp(tracker.getTimeOut().getTime()));
+            } else {
+                stmt.setNull(2, Types.TIMESTAMP);
+            }
+
+            stmt.setInt(3, tracker.getSessionMinutes());
             stmt.setInt(4, tracker.getStaffId());
             stmt.setDate(5, new java.sql.Date(tracker.getDate().getTime()));
 
@@ -93,9 +114,9 @@ public class stafftrackerDAO {
                 Date date = rs.getDate("date");
                 Date timeIn = new Date(rs.getTime("time_in").getTime());
                 Date timeOut = new Date(rs.getTime("time_out").getTime());
-                BigDecimal hoursWorked = rs.getBigDecimal("hours_worked");
+                int session_minutes = rs.getInt("session_minutes");
 
-                trackers.add(new StaffTracker(staffId, date, timeIn, timeOut, hoursWorked));
+                trackers.add(new StaffTracker(staffId, date, timeIn, timeOut, session_minutes));
             }
 
         } catch (SQLException e) {
