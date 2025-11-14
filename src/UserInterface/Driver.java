@@ -1,6 +1,5 @@
 package UserInterface;
 
-import Controller.NavController;
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
@@ -14,16 +13,12 @@ public class Driver extends Application {
 
     @Override
     public void start(Stage stage) throws IOException {
-        NavController.setStage(stage);
-        //setting the nav
-        NavController.registerScreens(); //populate a directory of fxml paths
-        //Start with login screen
-        NavController.navigate("login");
+       LoginUI.openLogin(stage);
     }
 
 
 
     public static void main(String[] args) {
-        launch(args);
+        launch();
     }
 }

@@ -22,7 +22,6 @@ public class UserService {
         if(retrieved != null){
             if(retrieved.getStaffPin() == userPass) {
                 current_user = retrieved;
-                SessionTracker.startSession(current_user);
                 return 0;
             }
         }
@@ -33,10 +32,8 @@ public class UserService {
     }
 
     public static void logOut(){
-        SessionTracker.endSession();
         current_user = null;
         isLoggedIn = false;
-        NavController.navigate("login");
     }
 
 

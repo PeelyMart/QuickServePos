@@ -6,13 +6,13 @@ import javafx.scene.control.Button;
 public class ReportUI {
 
     @FXML
-    private Button tablesButton, staffButton, loyaltyButton, menuButton;
+    private Button salesButton, staffButton, loyaltyButton, menuButton;
 
     @FXML
     private void initialize() {
         // assign the same handler to all buttons
-        if (tablesButton != null)
-            tablesButton.setOnAction(e -> SceneNavigator.switchScene(tablesButton, "/Resources/Reports/reports-view.fxml"));
+        if (salesButton != null)
+            salesButton.setOnAction(e -> SceneNavigator.switchScene(salesButton, "/Resources/Reports/reports-view.fxml"));
 
         if (staffButton != null)
             staffButton.setOnAction(e -> SceneNavigator.switchScene(staffButton, "/Resources/Reports/reports-view.fxml"));

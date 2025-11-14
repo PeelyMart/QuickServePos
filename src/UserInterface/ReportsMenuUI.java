@@ -13,7 +13,7 @@ public class ReportsMenuUI {
         // Assign action to the "More Info" button
         menuButton.setOnAction(e -> {
             // Go to another scene when clicked
-            SceneNavigator.switchScene(menuButton, "/Resources/Reports/MoreInfoUI.fxml");
+            SceneNavigator.switchScene(menuButton, "/Resources/Reports/reports-view.fxml");
         });
     }
 }
