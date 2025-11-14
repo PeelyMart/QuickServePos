@@ -20,7 +20,7 @@
                 <TextField layoutX="56.0" layoutY="146.0" prefHeight="26.0" prefWidth="179.0" promptText="Username" />
                 <TextField layoutX="56.0" layoutY="206.0" prefHeight="26.0" prefWidth="179.0" promptText="Password" />
                 <Button layoutX="59.0" layoutY="259.0" mnemonicParsing="false" prefHeight="32.0" prefWidth="171.0" style="-fx-background-radius: 50; -fx-background-color: #2f3961;" text="Log In" textFill="WHITE" />
-            <Text fill="#d71818" layoutX="91.0" layoutY="244.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Incorrect password or username. Try again.">
+            <Text fill="#d71818" layoutX="88.0" layoutY="241.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Incorrect username or user cannot be found.">
                <font>
                   <Font size="8.0" />
                </font>

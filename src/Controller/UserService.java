@@ -2,12 +2,15 @@ package Controller;
 
 import DAO.StaffDB;
 import Model.Staff;
+import javafx.fxml.FXML;
+import javafx.scene.control.TextField;
+
 
 public class UserService {
     private static Staff current_user = null ;
     private static boolean isLoggedIn = false;
-
-    /*
+    @FXML private TextField staffIDField;
+    /**
         Login method,
         @return 1 = incorrect username/user cannot be found
         @return 2 = incorrect password
