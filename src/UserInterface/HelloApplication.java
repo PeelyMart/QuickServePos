@@ -13,7 +13,6 @@ public class HelloApplication extends Application {
 
     @Override
     public void start(Stage stage) throws IOException {
-        // Load main Pokedex UI directly
 
         FXMLLoader loader = new FXMLLoader(getClass().getResource("/Resources/MainMenu/dashboard.fxml"));
         AnchorPane root = loader.load();

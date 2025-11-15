@@ -1,9 +1,11 @@
 package DAO;
 
+import Model.Payment;
+
 import java.sql.*;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
-/*
+
 public class PaymentDAO {
 
     public boolean recordPayment(Payment payment) {
@@ -183,4 +185,3 @@ public class PaymentDAO {
         return payments;
     }
 }
-*/
