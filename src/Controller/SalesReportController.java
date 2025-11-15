@@ -1,8 +1,7 @@
 package Controller;
 
-import Model.Payment;
 import DAO.PaymentDAO;
-
+import Model.Payment;
 import java.time.LocalDateTime;
 import java.util.*;
 

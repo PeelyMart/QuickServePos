@@ -136,6 +136,7 @@ public class PaymentDAO {
                 p.setAmountPaid(rs.getDouble("amount_paid"));
                 String paymentMethodStr = rs.getString("payment_method");
                 Payment.PaymentMethod paymentMethodEnum = Payment.PaymentMethod.valueOf(paymentMethodStr);
+                p.setPaymentMethod(paymentMethodEnum);
                 p.setPaymentDate(rs.getTimestamp("payment_date").toLocalDateTime());
                 p.setStaffId(rs.getInt("staff_id"));
 
@@ -170,6 +171,7 @@ public class PaymentDAO {
                 p.setAmountPaid(rs.getDouble("amount_paid"));
                 String paymentMethodStr = rs.getString("payment_method");
                 Payment.PaymentMethod paymentMethodEnum = Payment.PaymentMethod.valueOf(paymentMethodStr);
+                p.setPaymentMethod(paymentMethodEnum);
                 p.setPaymentDate(rs.getTimestamp("payment_date").toLocalDateTime());
                 p.setStaffId(rs.getInt("staff_id"));
 
