@@ -1,5 +1,6 @@
+package Controller;
+
 import Model.Payment;
-import Model.Payment.PaymentMethod;
 import DAO.PaymentDAO;
 
 import java.time.LocalDateTime;
@@ -8,24 +9,6 @@ import java.util.Map;
 
 public class PaymentTest {
     public static void main(String[] args) {
-        // Create and insert a payment
-        Payment p = new Payment();
-        p.setOrderId(123);
-        p.setAmountPaid(50.00);
-        p.setPaymentMethod(Payment.PaymentMethod.CASH);
-        p.setPaymentDate(LocalDateTime.now());
-        p.setStaffId(1);
-        p.setLoyalCustomerId(55);
-        p.setUnknownCustomerName(null);
-        p.setActive(true);
-        
-        PaymentDAO dao = new PaymentDAO();
-        boolean inserted = dao.recordPayment(p);
-        System.out.println("Inserted: " + inserted);
-
-        // Read payment back
-        Payment loaded = dao.getPaymentById(p.getTransactionId());
-        System.out.println("Loaded: " + loaded.getAmountPaid());
 
         // Generate report
         LocalDateTime start = SalesReportController.getDayStart(2025, 11, 15);
