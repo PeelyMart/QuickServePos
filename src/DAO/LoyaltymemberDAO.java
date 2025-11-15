@@ -1,10 +1,12 @@
 package DAO;
 
 import Model.LoyaltyMember;
-
 import java.sql.*;
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.Map;
+
 public class LoyaltymemberDAO {
     /**
      * Increment loyalty points for a member by a given amount.
@@ -179,6 +181,71 @@ public class LoyaltymemberDAO {
         }
 
         return members;
+    }
+
+    /**
+     * counts new members by month 
+     * returns a map keyed by the first day of each month with counts.
+     */
+    public Map<LocalDate, Integer> countNewMembersByMonth(LocalDate start, LocalDate end) {
+        Map<LocalDate, Integer> result = new LinkedHashMap<>();
+        String sql = "SELECT YEAR(join_date) AS year, MONTH(join_date) AS month, COUNT(*) AS cnt " +
+                 "FROM loyalty_members " +
+                 "WHERE join_date BETWEEN ? AND ? " +
+                 "GROUP BY year, month " +
+                 "ORDER BY year, month";
+
+        try (Connection conn = DB.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setDate(1, Date.valueOf(start));
+            stmt.setDate(2, Date.valueOf(end));
+            ResultSet rs = stmt.executeQuery();
+
+            while (rs.next()) {
+                int year = rs.getInt("year");
+                int month = rs.getInt("month");
+                int count = rs.getInt("cnt");
+                
+                LocalDate key = LocalDate.of(year, month, 1); // first day of month as key
+                result.put(key, count);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return result;
+    }
+
+    /**
+     * count new members by year
+     * returns a map keyed by the first day of each year with counts.
+     */
+    public Map<LocalDate, Integer> countNewMembersByYear(LocalDate start, LocalDate end) {
+        Map<LocalDate, Integer> result = new LinkedHashMap<>();
+        String sql = "SELECT YEAR(join_date) AS year, COUNT(*) AS cnt " +
+                 "FROM loyalty_members " +
+                 "WHERE join_date BETWEEN ? AND ? " +
+                 "GROUP BY year " +
+                 "ORDER BY year";
+
+        try (Connection conn = DB.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setDate(1, Date.valueOf(start));
+            stmt.setDate(2, Date.valueOf(end));
+            ResultSet rs = stmt.executeQuery();
+
+            while (rs.next()) {
+                int year = rs.getInt("year");
+                int count = rs.getInt("cnt");
+                
+                LocalDate key = LocalDate.of(year, 1, 1); //first day of the year as key
+                result.put(key, count);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return result;
     }
 
     public boolean resetAutoIncrement(){
