@@ -132,7 +132,6 @@ CREATE TABLE IF NOT EXISTS reservations (
     table_id INT NOT NULL,
     reserve_name VARCHAR(50) NOT NULL,
     date_and_time DATETIME NOT NULL,
-    subtotal DECIMAL(10,2) DEFAULT NULL,
     is_active TINYINT(1) NOT NULL DEFAULT 1,
     PRIMARY KEY (request_id),
     FOREIGN KEY (table_id) REFERENCES tables(table_id)

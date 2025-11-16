@@ -15,7 +15,7 @@ public class Reservations {
 
     //constructor
 
-    public Reservations(int requestId, int tableId, String reserveName, LocalDateTime dateAndTime, double subtotal, boolean isActive) {
+    public Reservations(int requestId, int tableId, String reserveName, LocalDateTime dateAndTime, boolean isActive) {
         this.requestId = requestId;
         this.tableId = tableId;
         this.reserveName = reserveName;
