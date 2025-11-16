@@ -1,13 +1,10 @@
 package DAO;
 
 import Model.Payment;
-<<<<<<< HEAD
-=======
-
->>>>>>> d3754a50ff2275efa81a49b2e124174cac86bc02
 import java.sql.*;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.List;
 
 public class PaymentDAO {
 
@@ -192,4 +189,32 @@ public class PaymentDAO {
         }
         return payments;
     }
+
+    public static List<Payment> getPaymentsByStaffId(int staffId) {
+        List<Payment> payments = new ArrayList<>();
+        String sql = "SELECT * FROM payments WHERE staff_id = ? ORDER BY payment_date";
+        try (Connection conn = DB.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setInt(1, staffId);
+            ResultSet rs = stmt.executeQuery();
+            while (rs.next()) {
+                int transactionId = rs.getInt("transaction_id");
+                int orderId = rs.getInt("order_id");
+                double amountPaid = rs.getDouble("amount_paid");
+                String paymentMethodStr = rs.getString("payment_method");
+                Payment.PaymentMethod paymentMethodEnum = Payment.PaymentMethod.valueOf(paymentMethodStr);
+                LocalDateTime paymentDate = rs.getTimestamp("payment_date").toLocalDateTime();
+                int staff_id = rs.getInt("staff_id");
+                Integer loyalCustomerId = rs.getObject("loyal_customer_id") != null ? rs.getInt("loyal_customer_id") : null;
+                String unknownCustomerName = rs.getString("unknown_customer_name");
+                boolean isActive = rs.getBoolean("is_active");
+                payments.add(new Payment(transactionId, orderId, amountPaid, paymentMethodEnum, paymentDate,
+                        staff_id, loyalCustomerId, unknownCustomerName, isActive));
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return payments;
+    }
+
 }

@@ -2,11 +2,11 @@ package DAO;
 
 
 import Model.StaffTracker;
-
 import java.sql.*;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.Date;
+import java.util.ArrayList;
+import java.util.List;
 
 public class StaffTrackDAO {
 
@@ -32,12 +32,28 @@ public class StaffTrackDAO {
         catch(SQLException e ){
             e.printStackTrace();
         }
+    }
 
 
-
-
-
-
+    public static List<StaffTracker> getSessionsByStaffId(int staffId) {
+        List<StaffTracker> sessions = new ArrayList<>();
+        String sql = "SELECT * FROM staff_tracker WHERE staff_id = ? ORDER BY time_in";
+        try (Connection conn = DB.getConnection();
+            PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setInt(1, staffId);
+            ResultSet rs = stmt.executeQuery();
+            while (rs.next()) {
+                StaffTracker tracker = new StaffTracker(staffId);
+                tracker.setDate(rs.getDate("date"));
+                tracker.setTimeIn(rs.getTimestamp("time_in").toLocalDateTime());
+                tracker.setTimeOut(rs.getTimestamp("time_out").toLocalDateTime());
+                tracker.setSessionMinutes(rs.getInt("session_minutes"));
+                sessions.add(tracker);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return sessions;
     }
 
 }

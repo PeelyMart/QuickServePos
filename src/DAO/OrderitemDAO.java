@@ -1,10 +1,13 @@
 package DAO;
 
 import Model.OrderItem;
-
 import java.sql.*;
+import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
+
 public class OrderitemDAO {
 
     /**
@@ -146,6 +149,33 @@ public class OrderitemDAO {
         return orderItems;
     }
 
+    /** 
+    * returns a map of total quantity sold and sales amount in a date range
+    */
 
+    public static Map<Integer, double[]> MenuSales(LocalDate start, LocalDate end) {
+        Map<Integer, double[]> result = new LinkedHashMap<>();
+        String sql = "SELECT menu_id, SUM(quantity) AS total_qty, SUM(subtotal) AS total_amt " +
+                     "FROM order_items oi JOIN order_header oh ON oi.order_id = oh.order_id " +
+                     "WHERE oh.order_time BETWEEN ? AND ? " +
+                     "GROUP BY menu_id ORDER BY total_qty DESC;";
+                     
+        try (Connection conn = DB.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
 
+            stmt.setDate(1, java.sql.Date.valueOf(start));
+            stmt.setDate(2, java.sql.Date.valueOf(end));
+            ResultSet rs = stmt.executeQuery();
+
+            while (rs.next()) {
+                int menuId = rs.getInt("menu_id");
+                double qty = rs.getDouble("total_qty");
+                double amt = rs.getDouble("total_amt");
+                result.put(menuId, new double[] { qty, amt });
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return result;
+    }
 }

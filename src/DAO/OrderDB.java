@@ -4,9 +4,10 @@ import Controller.OrderController;
 import Model.Order;
 import Model.OrderItem;
 import Model.OrderStatus;
-
 import java.math.BigDecimal;
 import java.sql.*;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 public class OrderDB {
@@ -129,7 +130,24 @@ public class OrderDB {
         return null;
     }
 
-
-
-
+    public static List<Order> getOrdersByStaffId(int staffId) {
+        List<Order> orders = new ArrayList<>();
+        String sql = "SELECT * FROM order_header WHERE staff_id = ? ORDER BY order_time";
+        try (Connection conn = DB.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setInt(1, staffId);
+            ResultSet rs = stmt.executeQuery();
+            while (rs.next()) {
+                int orderId = rs.getInt("order_id");
+                int tableId = rs.getInt("table_id");
+                LocalDateTime orderTime = rs.getTimestamp("order_time").toLocalDateTime();
+                BigDecimal totalCost = rs.getBigDecimal("total_cost");
+                String statusStr = rs.getString("status");
+                orders.add(new Order(orderId, tableId, staffId, orderTime, totalCost, Model.OrderStatus.fromString(statusStr)));
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return orders;
+    }
 }
