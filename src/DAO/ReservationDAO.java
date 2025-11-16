@@ -15,7 +15,6 @@ public class ReservationDAO {
             stmt.setInt(1, reservation.getTableId());
             stmt.setString(2, reservation.getReserveName());
             stmt.setTimestamp(3, Timestamp.valueOf(reservation.getDateAndTime()));
-            stmt.setDouble(4, reservation.getSubtotal());
             stmt.setBoolean(5, reservation.getIsActive());
 
             int affectedRows = stmt.executeUpdate();
