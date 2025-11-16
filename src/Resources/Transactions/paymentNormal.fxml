@@ -23,8 +23,16 @@
             </font>
         </Text>
 
-        <!-- TextAreas -->
-        <TextArea layoutX="36.0" layoutY="91.0" prefHeight="286.0" prefWidth="328.0" />
+        <!-- Order Summary -->
+        <TextArea fx:id="orderSummaryArea" layoutX="36.0" layoutY="91.0" prefHeight="200.0" prefWidth="328.0" editable="false" wrapText="true" />
+        
+        <!-- Total Display -->
+        <Text fill="WHITE" layoutX="36.0" layoutY="310.0" strokeType="OUTSIDE" strokeWidth="0.0" text="TOTAL:">
+            <font>
+                <Font name="Verdana Bold" size="18.0" />
+            </font>
+        </Text>
+        <TextArea fx:id="totalArea" layoutX="36.0" layoutY="315.0" prefHeight="30.0" prefWidth="328.0" editable="false" />
 
         <!-- Buttons -->
         <Button fx:id="payButton" layoutX="261.0" layoutY="383.0" mnemonicParsing="false"

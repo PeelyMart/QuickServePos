@@ -20,11 +20,13 @@ import javafx.scene.layout.FlowPane;
 import javafx.stage.Stage;
 
 import java.util.List;
+import java.util.ArrayList;
+import Model.Reservations;
 
 public class TransactionMenuUI {
 
     // Buttons
-    @FXML private Button ordersButton, reservationsButton, takenButton, availableButton, backButton;
+    @FXML private Button ordersButton, reservationsButton, backButton;
 
     // Orders Table
     @FXML private TableView<OrderDisplay> ordersTable;
@@ -34,7 +36,7 @@ public class TransactionMenuUI {
     // Reservations Table
     @FXML private TableView<ReservationDisplay> reservationsTable;
     @FXML private TableColumn<ReservationDisplay, String> reservationDateColumn;
-    @FXML private TableColumn<ReservationDisplay, String> reservationQtyColumn;
+    @FXML private TableColumn<ReservationDisplay, String> reservationNameColumn;
 
     // Table buttons container (will be added to FXML)
     @FXML private FlowPane tableButtonsPane;
@@ -67,9 +69,10 @@ public class TransactionMenuUI {
             // Navigate to reservations screen
             SceneNavigator.switchScene(reservationsButton, "/Resources/Transactions/reservations.fxml");
         });
-        takenButton.setOnAction(e -> filterTables(true));
-        availableButton.setOnAction(e -> filterTables(false));
-        backButton.setOnAction(e -> SceneNavigator.switchScene(backButton, "/Resources/MainMenu/dashboard.fxml"));
+        backButton.setOnAction(e -> {
+            // Navigate back to dashboard - transactions will show in dashboard content
+            SceneNavigator.switchScene(backButton, "/Resources/MainMenu/dashboard.fxml");
+        });
 
         // Example: dynamic language change
         setLanguage("EN"); // or "ES", "FR", etc.
@@ -100,11 +103,12 @@ public class TransactionMenuUI {
         
         // Create a button for each table
         for (Table table : allTables) {
-            Button tableButton = new Button("Table " + table.getTableId());
-            tableButton.setPrefWidth(70);
-            tableButton.setPrefHeight(35);
+            Button tableButton = new Button(String.valueOf(table.getTableId()));
+            tableButton.setPrefWidth(50);
+            tableButton.setPrefHeight(50);
             tableButton.setPadding(new Insets(5));
-            tableButton.setFont(javafx.scene.text.Font.font(12));
+            tableButton.setFont(javafx.scene.text.Font.font(14));
+            tableButton.setStyle("-fx-background-radius: 50; -fx-border-radius: 50;");
             
             // Check if table has an active order (status = OPEN)
             Order activeOrder = getActiveOrderForTable(table.getTableId());
@@ -162,7 +166,7 @@ public class TransactionMenuUI {
         ordersTable.setItems(ordersList);
 
         reservationDateColumn.setCellValueFactory(new PropertyValueFactory<>("date"));
-        reservationQtyColumn.setCellValueFactory(new PropertyValueFactory<>("quantity"));
+        reservationNameColumn.setCellValueFactory(new PropertyValueFactory<>("name"));
         reservationsTable.setItems(reservationsList);
     }
 
@@ -176,6 +180,7 @@ public class TransactionMenuUI {
             currentOrder = (Order) data;
             System.out.println("Order received - Order ID: " + currentOrder.getOrderId() + ", Table ID: " + currentOrder.getTableId());
             loadCurrentTableOrder();
+            loadReservations(); // Load reservations when order is set
         } else if (data instanceof Table) {
             Table table = (Table) data;
             System.out.println("Table received - Table ID: " + table.getTableId());
@@ -184,6 +189,7 @@ public class TransactionMenuUI {
             if (order != null) {
                 currentOrder = order;
                 loadCurrentTableOrder();
+                loadReservations(); // Load reservations when order is set
             } else {
                 System.out.println("No order found for table " + table.getTableId());
                 ordersList.clear();
@@ -241,14 +247,20 @@ public class TransactionMenuUI {
 
     private void loadReservations() {
         reservationsList.clear();
-        // TODO: Replace with real DAO
-        reservationsList.add(new ReservationDisplay("2025-11-16", "3"));
-        reservationsList.add(new ReservationDisplay("2025-11-17", "2"));
+        // Load real reservations from DAO
+        if (currentOrder != null) {
+            int tableId = currentOrder.getTableId();
+            ArrayList<Reservations> allReservations = Controller.ReservationController.getAllReservations();
+            for (Reservations res : allReservations) {
+                if (res.getTableId() == tableId && res.getIsActive()) {
+                    String dateStr = res.getDateAndTime().toLocalDate().toString();
+                    String name = res.getReserveName();
+                    reservationsList.add(new ReservationDisplay(dateStr, name));
+                }
+            }
+        }
     }
 
-    private void filterTables(boolean showTaken) {
-        SceneNavigator.testClick(showTaken ? "Showing TAKEN tables" : "Showing AVAILABLE tables");
-    }
 
     /** Change UI language dynamically (buttons for now) */
     private void setLanguage(String lang) {
@@ -257,22 +269,16 @@ public class TransactionMenuUI {
                 ordersButton.setText("PEDIDOS");
                 reservationsButton.setText("RESERVAS");
                 backButton.setText("ATRÁS");
-                takenButton.setText("OCUPADAS");
-                availableButton.setText("DISPONIBLES");
                 break;
             case "FR": // French
                 ordersButton.setText("COMMANDES");
                 reservationsButton.setText("RÉSERVATIONS");
                 backButton.setText("RETOUR");
-                takenButton.setText("PRISES");
-                availableButton.setText("DISPONIBLES");
                 break;
             default: // English
                 ordersButton.setText("Orders");
                 reservationsButton.setText("Reservations");
                 backButton.setText("← BACK");
-                takenButton.setText("TAKEN");
-                availableButton.setText("AVAILABLE");
         }
     }
 
@@ -292,14 +298,14 @@ public class TransactionMenuUI {
 
     public static class ReservationDisplay {
         private final String date;
-        private final String quantity;
+        private final String name;
 
-        public ReservationDisplay(String date, String quantity) {
+        public ReservationDisplay(String date, String name) {
             this.date = date;
-            this.quantity = quantity;
+            this.name = name;
         }
 
         public String getDate() { return date; }
-        public String getQuantity() { return quantity; }
+        public String getName() { return name; }
     }
 }

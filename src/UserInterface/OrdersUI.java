@@ -87,8 +87,10 @@ public class OrdersUI {
 
         // BACK button -> go back to Transaction Menu
         if (backButton != null) {
-            backButton.setOnAction(e ->
-                    SceneNavigator.switchScene(backButton, "/Resources/Transactions/transactionMenu.fxml"));
+            backButton.setOnAction(e -> {
+                javafx.stage.Stage stage = (javafx.stage.Stage) backButton.getScene().getWindow();
+                SceneNavigator.switchNoButton(stage, "/Resources/Transactions/transactionMenu.fxml", currentOrder);
+            });
         }
 
         // If there's an order already set, load it now
@@ -585,33 +587,104 @@ public class OrdersUI {
             return;
         }
         
-        // Show dialog to toggle between active/completed
-        List<String> statusOptions = new ArrayList<>();
-        statusOptions.add("active");
-        statusOptions.add("completed");
+        int currentQuantity = itemToEdit.getQuantity();
+        boolean currentIsActive = itemToEdit.getStatus() != null && itemToEdit.getStatus();
         
-        String currentStatus = itemToEdit.getStatus() != null && itemToEdit.getStatus() ? "active" : "completed";
+        // First, ask for quantity to toggle
+        TextInputDialog quantityDialog = new TextInputDialog("1");
+        quantityDialog.setTitle("Edit Order Item Status");
+        quantityDialog.setHeaderText("Change status for: " + selected.getMenuItemName() + " (Current Qty: " + currentQuantity + ")");
+        quantityDialog.setContentText("Enter quantity to toggle status:");
+        Optional<String> quantityResult = quantityDialog.showAndWait();
         
-        ChoiceDialog<String> statusDialog = new ChoiceDialog<>(currentStatus, statusOptions);
-        statusDialog.setTitle("Edit Order Item Status");
-        statusDialog.setHeaderText("Change status for: " + selected.getMenuItemName() + " (Qty: " + itemToEdit.getQuantity() + ")");
-        statusDialog.setContentText("Select status:");
-        Optional<String> statusResult = statusDialog.showAndWait();
-        
-        statusResult.ifPresent(newStatus -> {
-            boolean isActive = newStatus.equals("active");
-            
-            // Update status
-            itemToEdit.setStatus(isActive);
-            
-            // Update in database
-            boolean success = orderitemDAO.updateOrderItem(itemToEdit);
-            if (success) {
-                SceneNavigator.showInfo("Order item status updated to " + newStatus + "!");
-                refreshCurrentOrder();
-            } else {
-                SceneNavigator.showError("Failed to update order item status.");
+        quantityResult.ifPresent(quantityStr -> {
+            int quantityToToggle;
+            try {
+                quantityToToggle = Integer.parseInt(quantityStr);
+            } catch (NumberFormatException e) {
+                SceneNavigator.showError("Please enter a valid number.");
+                return;
             }
+            
+            if (quantityToToggle <= 0) {
+                SceneNavigator.showError("Quantity must be greater than 0.");
+                return;
+            }
+            
+            if (quantityToToggle > currentQuantity) {
+                SceneNavigator.showError("Quantity cannot exceed current quantity (" + currentQuantity + ").");
+                return;
+            }
+            
+            // Show dialog to select new status
+            List<String> statusOptions = new ArrayList<>();
+            statusOptions.add("active");
+            statusOptions.add("completed");
+            
+            String newStatusDefault = currentIsActive ? "completed" : "active";
+            
+            ChoiceDialog<String> statusDialog = new ChoiceDialog<>(newStatusDefault, statusOptions);
+            statusDialog.setTitle("Edit Order Item Status");
+            statusDialog.setHeaderText("Change " + quantityToToggle + " of " + selected.getMenuItemName() + " to:");
+            statusDialog.setContentText("Select status:");
+            Optional<String> statusResult = statusDialog.showAndWait();
+            
+            statusResult.ifPresent(newStatus -> {
+                boolean isActive = newStatus.equals("active");
+                
+                // Get menu item for price calculation
+                MenuItem menuItem = menuItemDAO.getMenuItemById(itemToEdit.getMenuId());
+                if (menuItem == null) {
+                    SceneNavigator.showError("Menu item not found.");
+                    return;
+                }
+                
+                BigDecimal itemPrice = BigDecimal.valueOf(menuItem.getPrice());
+                BigDecimal toggleSubtotal = itemPrice.multiply(BigDecimal.valueOf(quantityToToggle));
+                
+                if (quantityToToggle == currentQuantity) {
+                    // Toggle all items - just update the existing item
+                    itemToEdit.setStatus(isActive);
+                    boolean success = orderitemDAO.updateOrderItem(itemToEdit);
+                    if (success) {
+                        SceneNavigator.showInfo("Order item status updated to " + newStatus + "!");
+                        refreshCurrentOrder();
+                    } else {
+                        SceneNavigator.showError("Failed to update order item status.");
+                    }
+                } else {
+                    // Partial toggle - create new item with new status, reduce existing item
+                    // First, update existing item quantity
+                    int remainingQuantity = currentQuantity - quantityToToggle;
+                    BigDecimal remainingSubtotal = itemPrice.multiply(BigDecimal.valueOf(remainingQuantity));
+                    
+                    itemToEdit.setQuantity(remainingQuantity);
+                    itemToEdit.setSubtotal(remainingSubtotal);
+                    // Keep original status for remaining items
+                    
+                    // Create new order item with toggled status
+                    OrderItem newItem = new OrderItem();
+                    newItem.setOrderId(itemToEdit.getOrderId());
+                    newItem.setMenuId(itemToEdit.getMenuId());
+                    newItem.setQuantity(quantityToToggle);
+                    newItem.setSubtotal(toggleSubtotal);
+                    newItem.setStatus(isActive);
+                    
+                    // Update existing item first, then add new item
+                    boolean updateSuccess = orderitemDAO.updateOrderItem(itemToEdit);
+                    if (updateSuccess) {
+                        boolean addSuccess = orderitemDAO.addOrderItem(newItem);
+                        if (addSuccess) {
+                            SceneNavigator.showInfo("Updated " + quantityToToggle + " item(s) to " + newStatus + "!");
+                            refreshCurrentOrder();
+                        } else {
+                            SceneNavigator.showError("Failed to create new order item.");
+                        }
+                    } else {
+                        SceneNavigator.showError("Failed to update order item.");
+                    }
+                }
+            });
         });
     }
     
@@ -627,6 +700,11 @@ public class OrdersUI {
     }
 
     private void openPaymentChoice() {
+        if (currentOrder == null) {
+            SceneNavigator.showError("No order selected. Please select a table first.");
+            return;
+        }
+        
         try {
             Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
             alert.setTitle("Payment Type");
@@ -643,7 +721,9 @@ public class OrdersUI {
                     "/Resources/Transactions/paymentLM.fxml" :
                     "/Resources/Transactions/paymentNormal.fxml";
 
-            SceneNavigator.switchScene(payButton, fxml);
+            // Pass order data to payment screen
+            javafx.stage.Stage stage = (javafx.stage.Stage) payButton.getScene().getWindow();
+            SceneNavigator.switchNoButton(stage, fxml, currentOrder);
 
         } catch (Exception ex) {
             ex.printStackTrace();

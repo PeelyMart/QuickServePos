@@ -22,7 +22,7 @@
                 <Font name="Verdana Bold" size="16.0" />
             </font>
         </Text>
-        <TextField fx:id="amountPaidField" layoutX="33.0" layoutY="90.0" prefHeight="47.0" prefWidth="430.0" />
+        <TextField fx:id="amountPaidField" layoutX="33.0" layoutY="90.0" prefHeight="47.0" prefWidth="430.0" promptText="Enter amount paid" style="-fx-font-size: 18px;" />
 
         <!-- Change Due -->
         <Text fill="WHITE" layoutX="33.0" layoutY="165.0" strokeType="OUTSIDE" strokeWidth="0.0" text="CHANGE DUE">
@@ -30,10 +30,15 @@
                 <Font name="Verdana Bold" size="16.0" />
             </font>
         </Text>
-        <TextArea fx:id="changeDueArea" layoutX="33.0" layoutY="170.0" prefHeight="47.0" prefWidth="430.0" />
+        <TextArea fx:id="changeDueArea" layoutX="33.0" layoutY="170.0" prefHeight="47.0" prefWidth="430.0" editable="false" style="-fx-font-size: 24px; -fx-font-weight: bold; -fx-text-alignment: center;" />
 
-        <!-- Notes / Optional -->
-        <TextArea fx:id="notesArea" layoutX="32.0" layoutY="242.0" prefHeight="47.0" prefWidth="430.0" />
+        <!-- Total Due Display -->
+        <Text fill="WHITE" layoutX="33.0" layoutY="242.0" strokeType="OUTSIDE" strokeWidth="0.0" text="TOTAL DUE:">
+            <font>
+                <Font name="Verdana Bold" size="16.0" />
+            </font>
+        </Text>
+        <TextArea fx:id="totalDueArea" layoutX="33.0" layoutY="247.0" prefHeight="30.0" prefWidth="430.0" editable="false" style="-fx-font-size: 18px; -fx-font-weight: bold;" />
 
         <!-- Action Buttons -->
         <Button fx:id="paidButton" layoutX="33.0" layoutY="300.0" prefHeight="40.0" prefWidth="194.0" style="-fx-background-radius: 15;" text="PAID [ORDER CLOSE]" textFill="WHITE">

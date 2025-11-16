@@ -2,12 +2,16 @@ package UserInterface;
 
 import DAO.MenuItemDAO;
 import Model.MenuItem;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
-import javafx.scene.control.Button;
-import javafx.scene.control.TextField;
-import javafx.scene.control.TextInputDialog;
+import javafx.scene.control.*;
+import javafx.scene.control.cell.PropertyValueFactory;
 
+import java.math.BigDecimal;
+import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 public class MenuOptionsUI {
 
@@ -18,10 +22,30 @@ public class MenuOptionsUI {
     private TextField searchMenu;
 
     @FXML
+    private TableView<MenuItem> menuTable;
+
+    @FXML
+    private TableColumn<MenuItem, Integer> idColumn;
+
+    @FXML
+    private TableColumn<MenuItem, String> nameColumn;
+
+    @FXML
+    private TableColumn<MenuItem, String> descriptionColumn;
+
+    @FXML
+    private TableColumn<MenuItem, Double> priceColumn;
+
+    @FXML
+    private TableColumn<MenuItem, Boolean> statusColumn;
+
     private final MenuItemDAO menuItemDAO = new MenuItemDAO();
 
     @FXML
     private void initialize() {
+        setupTableView();
+        loadAllMenuItems();
+
         addMenuButton.setOnAction(e -> handleAdd());
         searchMenuButton.setOnAction(e -> handleSearch());
         updateMenuButton.setOnAction(e -> handleUpdate());
@@ -30,6 +54,58 @@ public class MenuOptionsUI {
         if (backButton != null) {
             backButton.setOnAction(e ->
                     SceneNavigator.switchScene(backButton, "/Resources/MainMenu/dashboard.fxml"));
+        }
+
+        // Allow Enter key in search field
+        if (searchMenu != null) {
+            searchMenu.setOnAction(e -> handleSearch());
+        }
+    }
+
+    private void setupTableView() {
+        if (idColumn != null) {
+            idColumn.setCellValueFactory(new PropertyValueFactory<>("menuId"));
+        }
+        if (nameColumn != null) {
+            nameColumn.setCellValueFactory(new PropertyValueFactory<>("menuName"));
+        }
+        if (descriptionColumn != null) {
+            descriptionColumn.setCellValueFactory(new PropertyValueFactory<>("description"));
+        }
+        if (priceColumn != null) {
+            priceColumn.setCellValueFactory(new PropertyValueFactory<>("price"));
+            priceColumn.setCellFactory(column -> new TableCell<MenuItem, Double>() {
+                @Override
+                protected void updateItem(Double price, boolean empty) {
+                    super.updateItem(price, empty);
+                    if (empty || price == null) {
+                        setText(null);
+                    } else {
+                        setText(String.format("$%.2f", price));
+                    }
+                }
+            });
+        }
+        if (statusColumn != null) {
+            statusColumn.setCellValueFactory(new PropertyValueFactory<>("status"));
+            statusColumn.setCellFactory(column -> new TableCell<MenuItem, Boolean>() {
+                @Override
+                protected void updateItem(Boolean status, boolean empty) {
+                    super.updateItem(status, empty);
+                    if (empty || status == null) {
+                        setText(null);
+                    } else {
+                        setText(status ? "Available" : "Unavailable");
+                    }
+                }
+            });
+        }
+    }
+
+    private void loadAllMenuItems() {
+        List<MenuItem> allItems = menuItemDAO.getAllMenuItems();
+        if (menuTable != null && allItems != null) {
+            menuTable.setItems(FXCollections.observableArrayList(allItems));
         }
     }
 
@@ -54,30 +130,23 @@ public class MenuOptionsUI {
                 Optional<String> priceInput = priceDialog.showAndWait();
 
                 priceInput.ifPresent(priceStr -> {
-                    double price;
                     try {
-                        price = Double.parseDouble(priceStr);
+                        BigDecimal price = new BigDecimal(priceStr);
+
+                        MenuItem m = new MenuItem();
+                        m.setMenuName(name);
+                        m.setDescription(desc);
+                        m.setPrice(price.doubleValue());
+                        m.setStatus(true); // default available
+
+                        if (menuItemDAO.addMenuItem(m)) {
+                            SceneNavigator.showInfo("Menu Item added successfully!");
+                            loadAllMenuItems(); // Refresh table
+                        } else {
+                            SceneNavigator.showError("Failed to add Menu Item. Try again.");
+                        }
                     } catch (NumberFormatException ex) {
-                        SceneNavigator.showError("Price must be a number.");
-                        return;
-                    }
-
-                    MenuItem m = new MenuItem();
-                    m.setMenuName(name);
-                    m.setDescription(desc);
-                    m.setPrice(price);
-                    m.setStatus(true); // default available
-
-                    if (menuItemDAO.addMenuItem(m)) {
-                        SceneNavigator.showInfo(
-                                "Menu Item added successfully!\n" +
-                                        "ID: " + m.getMenuId() + "\n" +
-                                        "Name: " + m.getMenuName() + "\n" +
-                                        "Description: " + m.getDescription() + "\n" +
-                                        "Price: " + m.getPrice()
-                        );
-                    } else {
-                        SceneNavigator.showError("Failed to add Menu Item. Try again.");
+                        SceneNavigator.showError("Price must be a valid number.");
                     }
                 });
             });
@@ -87,43 +156,55 @@ public class MenuOptionsUI {
     // ===================== SEARCH =====================
     @FXML
     private void handleSearch() {
-        String input = searchMenu.getText();
-        int id;
-        try {
-            id = Integer.parseInt(input);
-        } catch (NumberFormatException ex) {
-            SceneNavigator.showError("Enter a valid numeric Menu ID.");
+        String input = searchMenu.getText().trim();
+        if (input.isEmpty()) {
+            loadAllMenuItems(); // Show all if search is empty
             return;
         }
 
-        MenuItem m = menuItemDAO.getMenuItemById(id);
-        if (m != null) {
-            SceneNavigator.showInfo(
-                    "Menu Item Found:\n" +
-                            "ID: " + m.getMenuId() + "\n" +
-                            "Name: " + m.getMenuName() + "\n" +
-                            "Description: " + m.getDescription() + "\n" +
-                            "Price: " + m.getPrice() + "\n" +
-                            "Status: " + (m.getStatus() ? "Available" : "Unavailable")
-            );
-        } else {
-            SceneNavigator.showError("No Menu Item found with ID: " + id);
+        // Try parsing as ID first
+        try {
+            int id = Integer.parseInt(input);
+            MenuItem m = menuItemDAO.getMenuItemById(id);
+            if (m != null) {
+                menuTable.setItems(FXCollections.observableArrayList(m));
+            } else {
+                SceneNavigator.showError("No Menu Item found with ID: " + id);
+                menuTable.getItems().clear();
+            }
+            return;
+        } catch (NumberFormatException ignored) {
+            // Not a number, search by name
+        }
+
+        // Search by name (partial match)
+        List<MenuItem> allItems = menuItemDAO.getAllMenuItems();
+        if (allItems != null) {
+            List<MenuItem> matching = allItems.stream()
+                    .filter(item -> item.getMenuName() != null &&
+                            item.getMenuName().toLowerCase().contains(input.toLowerCase()))
+                    .collect(Collectors.toList());
+
+            if (!matching.isEmpty()) {
+                menuTable.setItems(FXCollections.observableArrayList(matching));
+            } else {
+                SceneNavigator.showWarning("No menu items found matching: " + input);
+                menuTable.getItems().clear();
+            }
         }
     }
 
     // ===================== UPDATE =====================
     @FXML
     private void handleUpdate() {
-        String input = searchMenu.getText();
-        int id;
-        try {
-            id = Integer.parseInt(input);
-        } catch (NumberFormatException ex) {
-            SceneNavigator.showError("Enter a valid numeric Menu ID to update.");
+        MenuItem selected = menuTable.getSelectionModel().getSelectedItem();
+        if (selected == null) {
+            SceneNavigator.showError("Please select a menu item from the table to update.");
             return;
         }
 
-        MenuItem m = menuItemDAO.getMenuItemById(id);
+        // Reload from database to get latest data
+        MenuItem m = menuItemDAO.getMenuItemById(selected.getMenuId());
         if (m == null) {
             SceneNavigator.showError("Menu Item not found.");
             return;
@@ -147,22 +228,32 @@ public class MenuOptionsUI {
                 Optional<String> priceInput = priceDialog.showAndWait();
 
                 priceInput.ifPresent(priceStr -> {
-                    double price;
                     try {
-                        price = Double.parseDouble(priceStr);
+                        BigDecimal price = new BigDecimal(priceStr);
+
+                        // Toggle status
+                        ChoiceDialog<String> statusDialog = new ChoiceDialog<>(
+                                m.getStatus() ? "Available" : "Unavailable",
+                                "Available", "Unavailable");
+                        statusDialog.setTitle("Update Menu Item");
+                        statusDialog.setHeaderText("Select Status:");
+                        Optional<String> statusInput = statusDialog.showAndWait();
+
+                        statusInput.ifPresent(statusStr -> {
+                            m.setMenuName(newName);
+                            m.setDescription(newDesc);
+                            m.setPrice(price.doubleValue());
+                            m.setStatus("Available".equals(statusStr));
+
+                            if (menuItemDAO.updateMenuItem(m)) {
+                                SceneNavigator.showInfo("Menu Item updated successfully.");
+                                loadAllMenuItems(); // Refresh table
+                            } else {
+                                SceneNavigator.showError("Update failed.");
+                            }
+                        });
                     } catch (NumberFormatException ex) {
-                        SceneNavigator.showError("Price must be a number.");
-                        return;
-                    }
-
-                    m.setMenuName(newName);
-                    m.setDescription(newDesc);
-                    m.setPrice(price);
-
-                    if (menuItemDAO.updateMenuItem(m)) {
-                        SceneNavigator.showInfo("Menu Item " + id + " updated successfully.");
-                    } else {
-                        SceneNavigator.showError("Update failed.");
+                        SceneNavigator.showError("Price must be a valid number.");
                     }
                 });
             });
@@ -172,19 +263,29 @@ public class MenuOptionsUI {
     // ===================== DELETE =====================
     @FXML
     private void handleDelete() {
-        String input = searchMenu.getText();
-        int id;
-        try {
-            id = Integer.parseInt(input);
-        } catch (NumberFormatException ex) {
-            SceneNavigator.showError("Enter a valid numeric Menu ID to delete.");
+        MenuItem selected = menuTable.getSelectionModel().getSelectedItem();
+        if (selected == null) {
+            SceneNavigator.showError("Please select a menu item from the table to delete.");
             return;
         }
 
-        if (menuItemDAO.deleteMenuItem(id)) {
-            SceneNavigator.showInfo("Menu Item " + id + " deleted successfully.");
-        } else {
-            SceneNavigator.showError("Deletion failed. Menu Item may not exist.");
+        Alert confirmAlert = new Alert(Alert.AlertType.CONFIRMATION);
+        confirmAlert.setTitle("Delete Menu Item");
+        confirmAlert.setHeaderText("Are you sure you want to delete this menu item?");
+        confirmAlert.setContentText("ID: " + selected.getMenuId() + "\nName: " + selected.getMenuName());
+
+        ButtonType yesButton = new ButtonType("Yes");
+        ButtonType noButton = new ButtonType("No");
+        confirmAlert.getButtonTypes().setAll(yesButton, noButton);
+
+        Optional<ButtonType> result = confirmAlert.showAndWait();
+        if (result.isPresent() && result.get() == yesButton) {
+            if (menuItemDAO.deleteMenuItem(selected.getMenuId())) {
+                SceneNavigator.showInfo("Menu Item deleted successfully.");
+                loadAllMenuItems(); // Refresh table
+            } else {
+                SceneNavigator.showError("Deletion failed. Menu Item may not exist.");
+            }
         }
     }
 }

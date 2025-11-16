@@ -9,14 +9,19 @@
 
 <AnchorPane prefHeight="443.0" prefWidth="400.0" style="-fx-background-color: linear-gradient(to bottom right, #f0f0f0, #d4e0f5);" stylesheets="@../styleopt.css" xmlns="http://javafx.com/javafx/24.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="UserInterface.PaymentLMUI">
    <children>
-      <TextField layoutX="36.0" layoutY="91.0" prefHeight="26.0" prefWidth="266.0" style="-fx-background-color: #242d4e;" />
+      <TextField fx:id="memberIdField" layoutX="36.0" layoutY="91.0" prefHeight="26.0" prefWidth="266.0" style="-fx-background-color: #242d4e; -fx-text-fill: white;" promptText="Enter Member ID" />
       <Text fill="WHITE" layoutX="61.0" layoutY="49.0" strokeType="OUTSIDE" strokeWidth="0.0" text="PAYMENT [AS A LOYALTY MEMBER]" textAlignment="CENTER" wrappingWidth="277.09959411621094">
          <font>
             <Font name="Verdana Bold" size="22.0" />
          </font></Text>
-      <Label layoutX="36.0" layoutY="128.0" prefHeight="18.0" prefWidth="328.0" text="INVALID" textFill="WHITE" />
-      <TextArea layoutX="36.0" layoutY="154.0" prefHeight="26.0" prefWidth="328.0" />
-      <TextArea layoutX="36.0" layoutY="199.0" prefHeight="166.0" prefWidth="328.0" />
+      <Label fx:id="memberStatusLabel" layoutX="36.0" layoutY="128.0" prefHeight="18.0" prefWidth="328.0" text="" textFill="WHITE" />
+      <TextArea fx:id="memberInfoArea" layoutX="36.0" layoutY="154.0" prefHeight="50.0" prefWidth="328.0" editable="false" />
+      <TextArea fx:id="orderSummaryArea" layoutX="36.0" layoutY="220.0" prefHeight="120.0" prefWidth="328.0" editable="false" wrapText="true" />
+      <Text fill="WHITE" layoutX="36.0" layoutY="355.0" strokeType="OUTSIDE" strokeWidth="0.0" text="TOTAL AFTER DISCOUNT:">
+         <font>
+            <Font name="Verdana Bold" size="14.0" />
+         </font></Text>
+      <TextArea fx:id="totalArea" layoutX="36.0" layoutY="360.0" prefHeight="30.0" prefWidth="328.0" editable="false" />
       <Button fx:id="searchButton" layoutX="287.0" layoutY="82.0" mnemonicParsing="false" prefHeight="26.0" prefWidth="102.0" text="🔍" textFill="WHITE" />
       <Button fx:id="backButton" layoutX="36.0" layoutY="379.0" mnemonicParsing="false" prefHeight="26.0" prefWidth="102.0" text="BACK" textFill="WHITE">
          <font>

@@ -70,13 +70,22 @@ public class DashboardUI {
         Staff currentUser = UserService.getCurrentUser();
         if (currentUser != null) {
             cashierField.setText(currentUser.getFirstName() + " " + currentUser.getLastName());
-            printGreeting.setText("Welcome, " + currentUser.getFirstName() + "!");
+            printGreeting.setText("👋 Hello, " + currentUser.getFirstName() + "!\n\n" +
+                    "Welcome to the Restaurant Management System.\n\n" +
+                    "Select an option from the menu to get started.");
         } else {
-            printGreeting.setText("Welcome!");
+            printGreeting.setText("👋 Hello!\n\n" +
+                    "Welcome to the Restaurant Management System.\n\n" +
+                    "Select an option from the menu to get started.");
         }
 
         // Auto-set current time
         timeInField.setText(LocalTime.now().format(DateTimeFormatter.ofPattern("HH:mm:ss")));
+        
+        // Make greeting area nicer
+        printGreeting.setEditable(false);
+        printGreeting.setWrapText(true);
+        printGreeting.setStyle("-fx-font-size: 32px; -fx-font-weight: bold; -fx-background-color: transparent; -fx-text-fill: #2d3748;");
     }
 
     // ------------------------------
@@ -110,5 +119,19 @@ public class DashboardUI {
     private void loadContent(String fxmlFile) throws IOException {
         Parent view = FXMLLoader.load(getClass().getResource(fxmlFile));
         mainContent.setCenter(view);
+    }
+    
+    // ------------------------------
+    // Called when navigating back with data
+    // ------------------------------
+    public void setData(Object data) {
+        // If coming back with order data, show transactions
+        if (data != null) {
+            try {
+                loadContent("/Resources/MainMenu/transactions.fxml");
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
     }
 }

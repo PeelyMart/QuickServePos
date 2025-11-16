@@ -62,8 +62,8 @@ public class ReservationDAO {
             stmt.setInt(1, reservation.getTableId());
             stmt.setString(2, reservation.getReserveName());
             stmt.setTimestamp(3, Timestamp.valueOf(reservation.getDateAndTime()));
-            stmt.setBoolean(5, reservation.getIsActive());
-            stmt.setInt(6, reservation.getRequestId());
+            stmt.setBoolean(4, reservation.getIsActive());
+            stmt.setInt(5, reservation.getRequestId());
 
             return stmt.executeUpdate() > 0;
         } catch (SQLException e) {

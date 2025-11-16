@@ -16,7 +16,7 @@
         </Text>
 
         <!-- Balance Display -->
-        <TextArea fx:id="balanceArea" layoutX="36.0" layoutY="66.0" prefHeight="48.0" prefWidth="328.0" />
+        <TextArea fx:id="balanceArea" layoutX="36.0" layoutY="66.0" prefHeight="48.0" prefWidth="328.0" editable="false" style="-fx-font-size: 24px; -fx-font-weight: bold; -fx-text-alignment: center;" />
 
         <!-- Payment Instruction -->
         <Text fill="WHITE" layoutX="44.0" layoutY="160.0" strokeType="OUTSIDE" strokeWidth="0.0" text="HOW WOULD YOU LIKE TO SETTLE THIS PAYMENT?" textAlignment="CENTER" wrappingWidth="312.0">
