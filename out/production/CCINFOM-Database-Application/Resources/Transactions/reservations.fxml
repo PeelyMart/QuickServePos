@@ -10,7 +10,7 @@
 
 <AnchorPane prefHeight="426.0" prefWidth="600.0" stylesheets="@../styleopt.css" xmlns="http://javafx.com/javafx/24.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="UserInterface.reservationsUI">
    <children>
-      <TableView layoutX="25.0" layoutY="74.0" prefHeight="293.0" prefWidth="547.0">
+      <TableView fx:id="tableView" layoutX="25.0" layoutY="74.0" prefHeight="293.0" prefWidth="547.0">
         <columns>
           <TableColumn prefWidth="64.79998779296875" text="ID" />
           <TableColumn minWidth="0.0" prefWidth="139.20001220703125" text="tableID" />

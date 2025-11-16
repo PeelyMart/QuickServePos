@@ -54,30 +54,24 @@ public class TransactionsUI {
     }
 
     private void handleTableClick(Table table) {
+        Stage stage = (Stage) tableContainer.getScene().getWindow(); // get current stage
 
-        // If table is occupied (NOT available) → show their order
-        if (!table.getTableStatus()) {
+        if (!table.getTableStatus()) { // table occupied
             Order order = OrderDB.getWholeOrderByTable(table.getTableId());
             if (order != null) {
-                // Navigate to orders screen with the order data
-                Stage stage = (Stage) tableContainer.getScene().getWindow();
-                SceneNavigator.switchNoButton(stage, "/Resources/Transactions/orders.fxml", order);
+                SceneNavigator.switchNoButton(stage, "/Resources/Transactions/transactionMenu.fxml", order);
             } else {
                 SceneNavigator.showInfo("No order found for Table " + table.getTableId());
             }
             return;
         }
 
-        // Table is available → take the table
+        // table available → take it
         TableActions.initateTable(table, currentStaffId);
-
-        // Refresh UI
         loadTablesFromDB();
 
-        // Go to transaction menu
-        Stage stage = (Stage) tableContainer.getScene().getWindow(); // or any node
+        // pass table to TransactionMenuUI
         SceneNavigator.switchNoButton(stage, "/Resources/Transactions/transactionMenu.fxml", table);
-
-
     }
+
 }

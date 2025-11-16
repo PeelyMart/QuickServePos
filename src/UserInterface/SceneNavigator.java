@@ -53,28 +53,36 @@ public class SceneNavigator {
             FXMLLoader loader = new FXMLLoader(SceneNavigator.class.getResource(fxmlPath));
             Parent root = loader.load();
 
-            // Switch scene FIRST (this ensures initialize() is called)
+            // Get controller AFTER load() (initialize() is called during load())
+            Object controller = loader.getController();
+            System.out.println("SceneNavigator: Controller retrieved: " + (controller != null ? controller.getClass().getName() : "null"));
+            System.out.println("SceneNavigator: Data to pass: " + (data != null ? data.getClass().getName() : "null"));
+
+            // If controller has setData(), call it BEFORE setting scene
+            if (controller != null && data != null) {
+                try {
+                    System.out.println("SceneNavigator: Attempting to call setData()...");
+                    controller.getClass().getMethod("setData", Object.class).invoke(controller, data);
+                    System.out.println("SceneNavigator: setData() called successfully");
+                } catch (NoSuchMethodException ignored) {
+                    System.out.println("SceneNavigator: Controller doesn't have setData() method");
+                    // controller doesn't have setData → ignore
+                } catch (Exception e) {
+                    System.err.println("SceneNavigator: Error calling setData(): " + e.getMessage());
+                    e.printStackTrace();
+                }
+            } else {
+                System.out.println("SceneNavigator: Skipping setData() - controller: " + (controller != null) + ", data: " + (data != null));
+            }
+
+            // Switch scene AFTER setData() is called
             Scene scene = new Scene(root);
             stage.setScene(scene);
             stage.show();
-
-            // Get controller AFTER scene is set (initialize() has been called)
-            Object controller = loader.getController();
-
-            // If controller has setData(), call it NOW
-            if (controller != null && data != null) {
-                try {
-                    controller.getClass().getMethod("setData", Object.class).invoke(controller, data);
-                } catch (NoSuchMethodException ignored) {
-                    // controller doesn't have setData → ignore
-                } catch (Exception e) {
-                    System.err.println("Error calling setData(): " + e.getMessage());
-                    e.printStackTrace();
-                }
-            }
+            System.out.println("SceneNavigator: Scene set and shown");
 
         } catch (Exception e) {
-            System.err.println("Error in switchNoButton: " + e.getMessage());
+            System.err.println("SceneNavigator: Error in switchNoButton: " + e.getMessage());
             e.printStackTrace();
         }
     }
