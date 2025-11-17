@@ -138,10 +138,27 @@ public class TransactionsUI {
 
         // Table has no active order - check if it's available
         if (!freshTable.getTableStatus()) { 
-            // Table is marked as taken but has no order (shouldn't happen, but handle it)
-            SceneNavigator.showInfo("Table " + freshTable.getTableId() + " is marked as taken but has no active order.");
-            // Refresh buttons
-            loadTablesFromDB();
+            // Table is marked as taken but has no order - offer to mark it as available
+            Alert markAvailableDialog = new Alert(Alert.AlertType.CONFIRMATION);
+            markAvailableDialog.setTitle("Table Status");
+            markAvailableDialog.setHeaderText("Table " + freshTable.getTableId() + " is marked as taken but has no active order.");
+            markAvailableDialog.setContentText("Would you like to mark this table as available?");
+            
+            ButtonType yesButton = new ButtonType("Mark as Available");
+            ButtonType noButton = new ButtonType("Cancel");
+            markAvailableDialog.getButtonTypes().setAll(yesButton, noButton);
+            
+            Optional<ButtonType> result = markAvailableDialog.showAndWait();
+            if (result.isPresent() && result.get() == yesButton) {
+                // Mark table as available
+                freshTable.setTableStatus(true);
+                if (tableDAO.updateTable(freshTable)) {
+                    SceneNavigator.showInfo("Table " + freshTable.getTableId() + " is now available.");
+                    loadTablesFromDB(); // Refresh buttons to show updated status
+                } else {
+                    SceneNavigator.showError("Failed to update table status.");
+                }
+            }
             return;
         }
 

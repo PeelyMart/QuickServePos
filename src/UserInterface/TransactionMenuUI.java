@@ -12,7 +12,9 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.geometry.Insets;
+import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
+import javafx.scene.control.ButtonType;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.cell.PropertyValueFactory;
@@ -21,6 +23,7 @@ import javafx.stage.Stage;
 
 import java.util.List;
 import java.util.ArrayList;
+import java.util.Optional;
 import Model.Reservations;
 
 public class TransactionMenuUI {
@@ -202,6 +205,9 @@ public class TransactionMenuUI {
             updatePaxDisplay(); // Update pax display
             loadCurrentTableOrder();
             loadReservations(); // Load reservations when order is set
+            
+            // Check if order is empty (all orders cancelled)
+            checkAndOfferTableAvailability();
         } else if (data instanceof Table) {
             Table table = (Table) data;
             currentTableId = table.getTableId();
@@ -254,6 +260,41 @@ public class TransactionMenuUI {
                 paxText.setText("Pax: " + currentPax);
             } else {
                 paxText.setText("Pax: 0");
+            }
+        }
+    }
+    
+    private void checkAndOfferTableAvailability() {
+        // Check if order exists but has no items, and table is marked as taken
+        if (currentOrder != null && currentTableId > 0) {
+            boolean hasNoItems = (currentOrder.getOrderItems() == null || currentOrder.getOrderItems().isEmpty());
+            
+            if (hasNoItems) {
+                // Check if table is marked as taken
+                TableDAO tableDAO = new TableDAO();
+                Table table = tableDAO.getTableById(currentTableId);
+                if (table != null && !table.getTableStatus()) {
+                    // Table is marked as taken but has no orders - offer to mark as available
+                    Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+                    alert.setTitle("All Orders Cancelled");
+                    alert.setHeaderText("All orders cancelled for Table " + currentTableId);
+                    alert.setContentText("Table is now available. Would you like to mark it as available?");
+                    
+                    ButtonType yesButton = new ButtonType("Mark as Available");
+                    ButtonType noButton = new ButtonType("Cancel");
+                    alert.getButtonTypes().setAll(yesButton, noButton);
+                    
+                    Optional<ButtonType> result = alert.showAndWait();
+                    if (result.isPresent() && result.get() == yesButton) {
+                        // Mark table as available
+                        table.setTableStatus(true);
+                        if (tableDAO.updateTable(table)) {
+                            SceneNavigator.showInfo("Table " + currentTableId + " is now available.");
+                        } else {
+                            SceneNavigator.showError("Failed to update table status.");
+                        }
+                    }
+                }
             }
         }
     }
