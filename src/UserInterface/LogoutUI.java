@@ -1,5 +1,6 @@
 package UserInterface;
 
+import Controller.SessionTracker;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
@@ -23,6 +24,7 @@ public class LogoutUI {
     @FXML
     private void initialize() {
         // Display logout time
+        SessionTracker.endSession();
         LocalDateTime logoutTime = LocalDateTime.now();
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("'Logged out at:' HH:mm:ss 'on' MMM dd, yyyy");
         logoutTimeField.setText(logoutTime.format(formatter));

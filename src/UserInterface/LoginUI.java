@@ -1,5 +1,6 @@
 package UserInterface;
 
+import Controller.SessionTracker;
 import Controller.UserService;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -75,6 +76,7 @@ public class LoginUI {
         );
 
         if (resultFlag == 0) {
+            SessionTracker.startSession(UserService.getCurrentUser());
             // Login successful
             if (loginStage != null) loginStage.close();
             DashboardUI.openDashboard(mainStage);
