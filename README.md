@@ -10,7 +10,7 @@ The system focuses on structured data storage, transactional integrity, auditabi
 ## 📚 Academic Context
 - **Course:** Information Management (CCINFOM)
 - **Institution:** De La Salle University
-- **Term:** 2025 · First Year · Third Term
+- **Term:** 2025 · Second Year · First Term
 - **Group:** S27 · Group 12
 
 ---
